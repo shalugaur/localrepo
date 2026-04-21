@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community Fridge Mapper — Donor Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep: #1a3a2a;
+      --green-mid:  #2d6a4f;
+      --green-fresh:#52b788;
+      --cream:      #f5f0e8;
+      --warm-white: #fdfaf4;
+      --amber:      #d4a017;
+      --rust:       #c45c26;
+      --text-dark:  #1c1c1c;
+      --text-muted: #6b7665;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--green-deep);
+      color: var(--text-dark);
+      display: flex;
+      align-items: stretch;
+      overflow-x: hidden;
+    }
+
+    /* ---- LEFT PANEL ---- */
+    .left-panel {
+      width: 42%;
+      min-height: 100vh;
+      background: var(--green-mid);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -80px;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: rgba(82,183,136,0.18);
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; right: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(212,160,23,0.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 52px;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-icon {
+      width: 52px; height: 52px;
+      background: var(--amber);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.2;
+    }
+    .brand-name span {
+      display: block;
+      font-size: 0.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      color: var(--green-fresh);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--cream);
+      line-height: 1.15;
+      margin-bottom: 24px;
+      position: relative; z-index: 1;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: rgba(245,240,232,0.72);
+      line-height: 1.75;
+      max-width: 340px;
+      margin-bottom: 44px;
+      position: relative; z-index: 1;
+    }
+
+    .stats-row {
+      display: flex; gap: 32px;
+      position: relative; z-index: 1;
+    }
+    .stat {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-fresh);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(245,240,232,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .leaf-deco {
+      position: absolute;
+      bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.07;
+      font-size: 180px;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- RIGHT PANEL ---- */
+    .right-panel {
+      flex: 1;
+      background: var(--warm-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 56px;
+      position: relative;
+    }
+
+    .right-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--green-fresh), var(--amber), var(--rust));
+    }
+
+    .form-card {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .form-header {
+      margin-bottom: 36px;
+    }
+    .form-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+    .form-header p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Step indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 36px;
+    }
+    .step {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .step.active { color: var(--green-mid); }
+    .step.done { color: var(--green-fresh); }
+    .step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+    .step.active .step-dot {
+      background: var(--green-mid);
+      color: white;
+      border-color: var(--green-mid);
+    }
+    .step.done .step-dot {
+      background: var(--green-fresh);
+      color: white;
+      border-color: var(--green-fresh);
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #e0ddd7;
+      margin: 0 6px;
+    }
+    .step-line.done { background: var(--green-fresh); }
+
+    /* Form fields */
+    .fields { display: flex; flex-direction: column; gap: 20px; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--green-deep);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .field label .req { color: var(--rust); margin-left: 2px; }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border: 1.5px solid #ddd8ce;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.93rem;
+      color: var(--text-dark);
+      background: white;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      appearance: none;
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 90px;
+      padding-top: 12px;
+    }
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--green-fresh);
+      box-shadow: 0 0 0 4px rgba(82,183,136,0.12);
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #bbb5a8; }
+
+    /* Visit frequency */
+    .visit-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .visit-opt {
+      position: relative;
+    }
+    .visit-opt input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .visit-opt label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 8px;
+      border: 1.5px solid #ddd8ce;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: none;
+      letter-spacing: 0;
+      transition: all 0.2s;
+      background: white;
+    }
+    .visit-opt label .opt-icon { font-size: 22px; }
+    .visit-opt input[type="radio"]:checked + label {
+      border-color: var(--green-mid);
+      background: rgba(45,106,79,0.06);
+      color: var(--green-mid);
+    }
+
+    /* Checkbox */
+    .check-field {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .check-field input[type="checkbox"] {
+      width: 18px; height: 18px;
+      margin-top: 2px;
+      accent-color: var(--green-mid);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .check-field label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      cursor: pointer;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+    .check-field label a { color: var(--green-mid); text-decoration: underline; }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background: var(--green-mid);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 6px;
+    }
+    .btn-submit:hover {
+      background: var(--green-deep);
+      box-shadow: 0 8px 24px rgba(26,58,42,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    .login-link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .login-link a { color: var(--green-mid); font-weight: 500; text-decoration: none; }
+    .login-link a:hover { text-decoration: underline; }
+
+    /* Success overlay */
+    .success-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(26,58,42,0.88);
+      z-index: 100;
+      align-items: center; justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .success-overlay.show { display: flex; }
+    .success-box {
+      background: var(--warm-white);
+      border-radius: 20px;
+      padding: 56px 48px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .success-box h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--green-deep);
+      margin-bottom: 10px;
+    }
+    .success-box p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .btn-go {
+      display: inline-block;
+      padding: 12px 32px;
+      background: var(--green-mid);
+      color: white;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+    .btn-go:hover { background: var(--green-deep); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn  { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+    /* Form entry animation */
+    .fields .field, .fields .field-row, .fields .check-field, .fields .visit-options {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: slideUp 0.45s ease forwards;
+    }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    .fields > *:nth-child(1) { animation-delay: 0.05s; }
+    .fields > *:nth-child(2) { animation-delay: 0.10s; }
+    .fields > *:nth-child(3) { animation-delay: 0.15s; }
+    .fields > *:nth-child(4) { animation-delay: 0.20s; }
+    .fields > *:nth-child(5) { animation-delay: 0.25s; }
+    .fields > *:nth-child(6) { animation-delay: 0.30s; }
+    .fields > *:nth-child(7) { animation-delay: 0.35s; }
+    .fields > *:nth-child(8) { animation-delay: 0.40s; }
+    .fields > *:nth-child(9) { animation-delay: 0.45s; }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      body { flex-direction: column; }
+      .left-panel { width: 100%; min-height: auto; padding: 40px 28px 36px; }
+      .stats-row { display: none; }
+      .hero-title { font-size: 1.9rem; }
+      .hero-desc { display: none; }
+      .right-panel { padding: 40px 24px 56px; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="brand">
+    <div class="brand-icon">🧊</div>
+    <div class="brand-name">
+      Community Fridge Mapper
+      <span>Share food. Reduce waste.</span>
+    </div>
+  </div>
+
+  <h1 class="hero-title">
+    Every meal<br/>shared is a<br/><em>gift given.</em>
+  </h1>
+
+  <p class="hero-desc">
+    Join our network of generous donors and help connect surplus food to those who need it most — through community fridges near you.
+  </p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-num">2,400+</span>
+      <span class="stat-label">Active Donors</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">18K</span>
+      <span class="stat-label">Meals Shared</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">340</span>
+      <span class="stat-label">Fridge Locations</span>
+    </div>
+  </div>
+
+  <div class="leaf-deco">🌿</div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="form-card">
+
+    <div class="form-header">
+      <h2>Donor Registration</h2>
+      <p>Fill in your details to start donating food to your community.</p>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step active" id="s1">
+        <div class="step-dot">1</div>
+        <span>Personal</span>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="s2">
+        <div class="step-dot">2</div>
+        <span>Contact</span>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="s3">
+        <div class="step-dot">3</div>
+        <span>Visits</span>
+      </div>
+    </div>
+
+    <form id="donorForm" novalidate>
+      <div class="fields">
+
+        <!-- Name row -->
+        <div class="field-row">
+          <div class="field">
+            <label>First Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" id="firstName" placeholder="e.g. Arjun" required />
+            </div>
+          </div>
+          <div class="field">
+            <label>Last Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" id="lastName" placeholder="e.g. Sharma" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <span class="icon">✉️</span>
+            <input type="email" id="email" placeholder="you@example.com" required />
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="field">
+          <label>Contact Number <span class="req">*</span></label>
+          <div class="input-wrap">
+            <span class="icon">📞</span>
+            <input type="tel" id="phone" placeholder="+91 98765 43210" required />
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="field">
+          <label>Street Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <span class="icon">🏠</span>
+            <input type="text" id="address" placeholder="House / Flat / Building, Street" required />
+          </div>
+        </div>
+
+        <!-- City + Pincode -->
+        <div class="field-row">
+          <div class="field">
+            <label>City <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="icon">🏙️</span>
+              <input type="text" id="city" placeholder="e.g. Mumbai" required />
+            </div>
+          </div>
+          <div class="field">
+            <label>PIN / ZIP Code</label>
+            <div class="input-wrap">
+              <span class="icon">📮</span>
+              <input type="text" id="pincode" placeholder="400001" maxlength="10" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Visit frequency -->
+        <div class="field">
+          <label>How often do you plan to visit? <span class="req">*</span></label>
+          <div class="visit-options">
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v1" value="weekly" />
+              <label for="v1">
+                <span class="opt-icon">📅</span>
+                Weekly
+              </label>
+            </div>
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v2" value="monthly" />
+              <label for="v2">
+                <span class="opt-icon">🗓️</span>
+                Monthly
+              </label>
+            </div>
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v3" value="occasional" checked/>
+              <label for="v3">
+                <span class="opt-icon">🎲</span>
+                Occasional
+              </label>
+            </div>
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v4" value="daily" />
+              <label for="v4">
+                <span class="opt-icon">☀️</span>
+                Daily
+              </label>
+            </div>
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v5" value="fortnightly" />
+              <label for="v5">
+                <span class="opt-icon">🔁</span>
+                Fortnightly
+              </label>
+            </div>
+            <div class="visit-opt">
+              <input type="radio" name="visit" id="v6" value="irregular" />
+              <label for="v6">
+                <span class="opt-icon">❓</span>
+                Not Sure
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field">
+          <label>Additional Notes</label>
+          <div class="input-wrap">
+            <span class="icon" style="top:18px;">📝</span>
+            <textarea id="notes" placeholder="Food types you usually donate, preferred drop-off times, etc."></textarea>
+          </div>
+        </div>
+
+        <!-- Agree -->
+        <div class="check-field">
+          <input type="checkbox" id="agree" required />
+          <label for="agree">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>, and consent to my information being used to match me with nearby community fridges.
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit">
+          🌱 Register as Donor
+        </button>
+
+      </div>
+    </form>
+
+    <p class="login-link">Already registered? <a href="#">Sign in here →</a></p>
+  </div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <span class="success-icon">🎉</span>
+    <h3>You're a Donor!</h3>
+    <p>Welcome to the Community Fridge Mapper family. You'll receive a confirmation email shortly with nearby fridge locations.</p>
+    <button class="btn-go" onclick="document.getElementById('successOverlay').classList.remove('show')">
+      Explore Fridge Map →
+    </button>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('donorForm');
+  const overlay = document.getElementById('successOverlay');
+
+  // Step progress animation on interaction
+  const fields = ['firstName','lastName','email','phone','address','city'];
+  fields.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', updateSteps);
+  });
+  document.querySelectorAll('input[name="visit"]').forEach(r => r.addEventListener('change', updateSteps));
+
+  function updateSteps() {
+    const personal = document.getElementById('firstName').value && document.getElementById('lastName').value;
+    const contact  = document.getElementById('email').value && document.getElementById('phone').value;
+    const visit    = document.querySelector('input[name="visit"]:checked');
+
+    const s1 = document.getElementById('s1');
+    const s2 = document.getElementById('s2');
+    const s3 = document.getElementById('s3');
+    const l1 = document.getElementById('line1');
+    const l2 = document.getElementById('line2');
+
+    if (personal) { s1.classList.add('done'); l1.classList.add('done'); s2.classList.add('active'); }
+    if (contact)  { s2.classList.add('done'); l2.classList.add('done'); s3.classList.add('active'); }
+    if (visit)    { s3.classList.add('done'); }
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const req = ['firstName','lastName','email','phone','address','city'];
+    let valid = true;
+
+    req.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.style.borderColor = '#c45c26';
+        el.style.boxShadow = '0 0 0 4px rgba(196,92,38,0.12)';
+        valid = false;
+        el.addEventListener('input', () => {
+          el.style.borderColor = '';
+          el.style.boxShadow = '';
+        }, { once: true });
+      }
+    });
+
+    if (!document.getElementById('agree').checked) {
+      document.getElementById('agree').style.outline = '2px solid #c45c26';
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    overlay.classList.add('show');
+  });
+</script>
+</body>
+</html>

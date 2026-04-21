@@ -1,0 +1,437 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SharePlate - Food Donation Platform</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f5f0;
+    --color-background-tertiary: #eeede8;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #6b6b6b;
+    --color-text-tertiary: #9b9b9b;
+    --color-border-secondary: #d4d3cc;
+    --color-border-tertiary: #e4e3dc;
+    --border-radius-md: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--color-background-tertiary); color: var(--color-text-primary); }
+  .app { display: flex; flex-direction: column; min-height: 700px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .logo { font-size: 15px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #1D9E75; }
+  .nav { display: flex; gap: 4px; }
+  .nav-btn { padding: 6px 14px; font-size: 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+  .nav-btn.active { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+  .role-switch { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-secondary); }
+  .toggle { display: flex; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); overflow: hidden; }
+  .toggle-btn { padding: 5px 12px; font-size: 12px; background: transparent; border: none; cursor: pointer; color: var(--color-text-secondary); }
+  .toggle-btn.active { background: #1D9E75; color: #fff; }
+  .main { flex: 1; display: flex; overflow: hidden; height: calc(700px - 53px); }
+  .panel { display: none; width: 100%; height: 100%; }
+  .panel.show { display: flex; }
+  .sidebar { width: 340px; min-width: 340px; display: flex; flex-direction: column; border-right: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); overflow: hidden; }
+  .sidebar-head { padding: 14px 16px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .sidebar-head h2 { font-size: 14px; font-weight: 500; }
+  .sidebar-head p { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+  .scroll-area { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .food-card { padding: 12px 16px; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; }
+  .food-card:hover, .food-card.sel { background: var(--color-background-secondary); }
+  .fc-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .fc-name { font-size: 13px; font-weight: 500; }
+  .fc-qty { font-size: 11px; background: #EAF3DE; color: #3B6D11; padding: 2px 7px; border-radius: 10px; }
+  .fc-qty.claimed { background: #FCEBEB; color: #A32D2D; }
+  .fc-cat { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+  .fc-loc { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .fc-exp { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .fc-donor { font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; }
+  .map-area { flex: 1; position: relative; background: #ddeedd; overflow: hidden; }
+  .map-svg { width: 100%; height: 100%; }
+  .detail-panel { position: absolute; bottom: 0; left: 0; right: 0; background: var(--color-background-primary); border-top: 0.5px solid var(--color-border-secondary); padding: 16px; transform: translateY(100%); transition: transform 0.2s; }
+  .detail-panel.show { transform: translateY(0); }
+  .dp-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-secondary); line-height: 1; }
+  .dp-title { font-size: 15px; font-weight: 500; }
+  .dp-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .dp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .dp-stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px; text-align: center; }
+  .dp-stat-val { font-size: 14px; font-weight: 500; }
+  .dp-stat-label { font-size: 10px; color: var(--color-text-secondary); margin-top: 2px; }
+  .dp-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .dp-actions button { flex: 1; padding: 8px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-primary); cursor: pointer; }
+  .claim-btn { background: #1D9E75 !important; color: #fff !important; border-color: #1D9E75 !important; }
+  .claim-btn:disabled { background: #B4B2A9 !important; border-color: #B4B2A9 !important; cursor: not-allowed !important; }
+  .donate-pane { flex: 1; display: flex; flex-direction: column; }
+  .donate-split { flex: 1; display: flex; overflow: hidden; }
+  .donate-form-area { width: 360px; min-width: 360px; padding: 20px; overflow-y: auto; border-right: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+  .donate-form-area h2 { font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { font-size: 11px; color: var(--color-text-secondary); display: block; margin-bottom: 4px; }
+  .form-row input, .form-row select, .form-row textarea { width: 100%; font-size: 13px; padding: 7px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .form-row textarea { resize: none; height: 60px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .submit-btn { width: 100%; padding: 9px; font-size: 13px; border-radius: var(--border-radius-md); background: #1D9E75; color: #fff; border: none; cursor: pointer; margin-top: 4px; }
+  .donate-map { flex: 1; background: #ddeedd; position: relative; overflow: hidden; }
+  .map-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 6px 12px; font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+  .donations-list { padding: 20px; flex: 1; overflow-y: auto; background: var(--color-background-primary); border-top: 0.5px solid var(--color-border-tertiary); }
+  .donations-list h2 { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+  .my-item { padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .mi-name { font-size: 13px; font-weight: 500; }
+  .mi-detail { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .mi-badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; }
+  .mi-available { background: #EAF3DE; color: #3B6D11; }
+  .mi-claimed { background: #E6F1FB; color: #185FA5; }
+  .cat-chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+  .chip.active { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+  .notif { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #1D9E75; color: #fff; padding: 8px 20px; border-radius: var(--border-radius-md); font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; z-index: 20; }
+  .notif.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="logo"><div class="logo-dot"></div>SharePlate</div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="showView('receiver')">Browse food</button>
+      <button class="nav-btn" onclick="showView('donor')">Donate food</button>
+    </div>
+    <div class="role-switch">
+      <span>Filter:</span>
+      <div class="toggle">
+        <button class="toggle-btn active" id="f-all" onclick="setCatFilter('all',this)">All</button>
+        <button class="toggle-btn" id="f-avail" onclick="setCatFilter('available',this)">Available</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- RECEIVER PANEL -->
+    <div class="panel show" id="receiver-panel">
+      <div class="sidebar">
+        <div class="sidebar-head">
+          <h2>Food available near you</h2>
+          <p>Click any item to see details and claim it</p>
+        </div>
+        <div class="cat-chips" id="cat-chips">
+          <button class="chip active" onclick="filterCat('all',this)">All</button>
+          <button class="chip" onclick="filterCat('produce',this)">Produce</button>
+          <button class="chip" onclick="filterCat('bakery',this)">Bakery</button>
+          <button class="chip" onclick="filterCat('dairy',this)">Dairy</button>
+          <button class="chip" onclick="filterCat('meals',this)">Meals</button>
+          <button class="chip" onclick="filterCat('pantry',this)">Pantry</button>
+        </div>
+        <div class="scroll-area" id="food-list"></div>
+      </div>
+      <div class="map-area">
+        <svg class="map-svg" id="receiver-map" viewBox="0 0 680 647">
+          <rect width="680" height="647" fill="#ddeedd"/>
+          <rect x="0" y="290" width="680" height="70" fill="#c8e4d8" opacity="0.5"/>
+          <rect x="110" y="0" width="55" height="647" fill="#c8e4d8" opacity="0.4"/>
+          <rect x="330" y="0" width="40" height="647" fill="#c8e4d8" opacity="0.4"/>
+          <rect x="0" y="110" width="680" height="35" fill="#c8e4d8" opacity="0.4"/>
+          <rect x="0" y="430" width="680" height="35" fill="#c8e4d8" opacity="0.3"/>
+          <rect x="230" y="0" width="28" height="647" fill="#c8e4d8" opacity="0.3"/>
+          <rect x="510" y="0" width="28" height="647" fill="#c8e4d8" opacity="0.3"/>
+          <rect x="30" y="150" width="60" height="50" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="160" y="60" width="50" height="40" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="260" y="170" width="55" height="45" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="400" y="90" width="70" height="40" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="560" y="150" width="55" height="55" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="80" y="360" width="65" height="45" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="370" y="330" width="80" height="50" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="580" y="380" width="60" height="45" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="200" y="470" width="55" height="40" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <rect x="430" y="500" width="75" height="45" rx="3" fill="#b0cdb0" opacity="0.5"/>
+          <text x="6" y="643" font-size="9" fill="#7a9a7a" opacity="0.6">Map · community food network</text>
+          <g id="receiver-pins"></g>
+        </svg>
+        <div class="detail-panel" id="detail-panel">
+          <button class="dp-close" onclick="closeDetail()">×</button>
+          <div class="dp-title" id="dp-name"></div>
+          <div class="dp-sub" id="dp-sub"></div>
+          <div class="dp-grid">
+            <div class="dp-stat"><div class="dp-stat-val" id="dp-qty"></div><div class="dp-stat-label">Quantity</div></div>
+            <div class="dp-stat"><div class="dp-stat-val" id="dp-exp"></div><div class="dp-stat-label">Expires</div></div>
+            <div class="dp-stat"><div class="dp-stat-val" id="dp-cat"></div><div class="dp-stat-label">Category</div></div>
+          </div>
+          <div class="dp-actions">
+            <button onclick="getDir()">Directions</button>
+            <button class="claim-btn" id="claim-btn" onclick="claimFood()">Claim this food</button>
+          </div>
+        </div>
+        <div class="notif" id="notif"></div>
+      </div>
+    </div>
+
+    <!-- DONOR PANEL -->
+    <div class="panel" id="donor-panel">
+      <div class="donate-pane">
+        <div class="donate-split">
+          <div class="donate-form-area">
+            <h2>Add a food donation</h2>
+            <div class="form-row"><label>Food name</label><input type="text" id="d-name" placeholder="e.g. Fresh tomatoes, Sourdough loaf"></div>
+            <div class="form-row"><label>Category</label>
+              <select id="d-cat">
+                <option value="produce">Produce</option>
+                <option value="bakery">Bakery</option>
+                <option value="dairy">Dairy</option>
+                <option value="meals">Meals</option>
+                <option value="pantry">Pantry</option>
+              </select>
+            </div>
+            <div class="form-row-2">
+              <div class="form-row" style="margin-bottom:0"><label>Quantity</label><input type="text" id="d-qty" placeholder="e.g. 2 kg, 6 pieces"></div>
+              <div class="form-row" style="margin-bottom:0"><label>Expires</label><input type="text" id="d-exp" placeholder="e.g. Today, 3 days"></div>
+            </div>
+            <div class="form-row" style="margin-top:12px"><label>Pickup address</label><input type="text" id="d-addr" placeholder="Street address"></div>
+            <div class="form-row"><label>Your name</label><input type="text" id="d-donor" placeholder="First name or alias"></div>
+            <div class="form-row"><label>Notes (optional)</label><textarea id="d-notes" placeholder="Allergens, pickup instructions..."></textarea></div>
+            <button class="submit-btn" onclick="submitDonation()">Post donation</button>
+          </div>
+          <div class="donate-map" id="donate-map-area">
+            <svg class="map-svg" id="donor-map" viewBox="0 0 340 450">
+              <rect width="340" height="450" fill="#ddeedd"/>
+              <rect x="0" y="190" width="340" height="50" fill="#c8e4d8" opacity="0.5"/>
+              <rect x="55" y="0" width="30" height="450" fill="#c8e4d8" opacity="0.4"/>
+              <rect x="165" y="0" width="25" height="450" fill="#c8e4d8" opacity="0.4"/>
+              <rect x="260" y="0" width="25" height="450" fill="#c8e4d8" opacity="0.4"/>
+              <rect x="0" y="70" width="340" height="25" fill="#c8e4d8" opacity="0.3"/>
+              <rect x="0" y="300" width="340" height="25" fill="#c8e4d8" opacity="0.3"/>
+              <rect x="0" y="390" width="340" height="20" fill="#c8e4d8" opacity="0.3"/>
+              <rect x="15" y="100" width="35" height="30" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="80" y="50" width="30" height="25" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="130" y="110" width="30" height="28" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="200" y="60" width="40" height="28" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="280" y="90" width="30" height="35" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="40" y="240" width="35" height="30" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="185" y="220" width="45" height="35" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="290" y="250" width="35" height="30" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="100" y="330" width="30" height="28" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <rect x="220" y="350" width="40" height="30" rx="2" fill="#b0cdb0" opacity="0.5"/>
+              <g id="donor-pins"></g>
+            </svg>
+            <div class="map-hint" id="map-hint">Click on map to set pickup location</div>
+          </div>
+        </div>
+        <div class="donations-list" style="max-height:200px">
+          <h2>Your donations</h2>
+          <div id="my-donations"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const catColors = { produce:'#1D9E75', bakery:'#BA7517', dairy:'#378ADD', meals:'#D85A30', pantry:'#534AB7' };
+  const catEmoji  = { produce:'🥦', bakery:'🍞', dairy:'🥛', meals:'🍱', pantry:'🥫' };
+
+  let foods = [
+    {id:1, name:'Fresh apples',      cat:'produce', qty:'~2 kg',              exp:'2 days',   addr:'12 Oak Lane',    donor:'Priya',  notes:'No pesticides',      x:160, y:195, claimed:false, dx:80,  dy:135},
+    {id:2, name:'Sourdough loaves',  cat:'bakery',  qty:'3 loaves',           exp:'Today',    addr:'45 Mill Road',   donor:'Ravi',   notes:'Baked this morning', x:420, y:140, claimed:false, dx:213, dy:97},
+    {id:3, name:'Homemade dal',      cat:'meals',   qty:'4 portions',         exp:'Today',    addr:'7 Green St',     donor:'Meena',  notes:'Contains lentils',   x:580, y:390, claimed:false, dx:291, dy:272},
+    {id:4, name:'Milk & paneer',     cat:'dairy',   qty:'1L milk, 250g paneer',exp:'Tomorrow', addr:'88 Park Ave',   donor:'Ankit',  notes:'',                   x:230, y:430, claimed:false, dx:116, dy:300},
+    {id:5, name:'Rice & lentils',    cat:'pantry',  qty:'1 kg each',          exp:'3 months', addr:'21 Station Rd',  donor:'Sunita', notes:'Sealed packets',     x:490, y:260, claimed:false, dx:245, dy:181},
+    {id:6, name:'Mixed vegetables',  cat:'produce', qty:'Assorted bag',       exp:'2 days',   addr:'34 Garden Blvd', donor:'Kiran',  notes:'Picked this morning',x:130, y:310, claimed:false, dx:65,  dy:216},
+  ];
+
+  let nextId = 7, selId = null, activeView = 'receiver';
+  let catFilter = 'all', availFilter = 'all';
+  let donorPinPlaced = null;
+
+  function showView(v) {
+    activeView = v;
+    document.getElementById('receiver-panel').classList.toggle('show', v === 'receiver');
+    document.getElementById('donor-panel').classList.toggle('show', v === 'donor');
+    document.querySelectorAll('.nav-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && v === 'receiver') || (i === 1 && v === 'donor'));
+    });
+    document.querySelector('.role-switch').style.display = v === 'receiver' ? 'flex' : 'none';
+    if (v === 'donor') { renderMyDonations(); renderDonorPins(); }
+    else { renderList(); renderReceiverPins(); }
+  }
+
+  function setCatFilter(f, el) {
+    availFilter = f;
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderList(); renderReceiverPins();
+  }
+
+  function filterCat(c, el) {
+    catFilter = c;
+    document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderList(); renderReceiverPins();
+  }
+
+  function getVisible() {
+    return foods.filter(f => {
+      const catOk   = catFilter === 'all' || f.cat === catFilter;
+      const availOk = availFilter === 'all' || !f.claimed;
+      return catOk && availOk;
+    });
+  }
+
+  function renderList() {
+    const list = document.getElementById('food-list');
+    const vis  = getVisible();
+    list.innerHTML = vis.map(f => `
+      <div class="food-card ${selId === f.id ? 'sel' : ''}" onclick="selectFood(${f.id})">
+        <div class="fc-row">
+          <div class="fc-name">${f.name}</div>
+          <span class="fc-qty ${f.claimed ? 'claimed' : ''}">${f.claimed ? 'Claimed' : 'Available'}</span>
+        </div>
+        <div class="fc-cat" style="color:${catColors[f.cat]}">${catEmoji[f.cat]} ${f.cat.charAt(0).toUpperCase()+f.cat.slice(1)}</div>
+        <div class="fc-loc">📍 ${f.addr}</div>
+        <div class="fc-exp">⏳ Expires: ${f.exp} · by ${f.donor}</div>
+        ${f.notes ? `<div class="fc-donor" style="color:var(--color-text-tertiary);font-style:italic">${f.notes}</div>` : ''}
+      </div>`).join('');
+    if (!vis.length) list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--color-text-secondary)">No items found</div>';
+  }
+
+  function renderReceiverPins() {
+    const layer = document.getElementById('receiver-pins');
+    const vis   = new Set(getVisible().map(f => f.id));
+    layer.innerHTML = foods.map(f => {
+      const col = f.claimed ? '#888780' : catColors[f.cat];
+      const sel = selId === f.id;
+      return `<g onclick="selectFood(${f.id})" style="cursor:pointer" opacity="${vis.has(f.id) ? 1 : 0.2}">
+        <circle cx="${f.x}" cy="${f.y}" r="${sel ? 16 : 12}" fill="${col}" opacity="0.2"/>
+        <circle cx="${f.x}" cy="${f.y}" r="${sel ? 10 : 7}"  fill="${col}"/>
+        <text x="${f.x}" y="${f.y+4}" text-anchor="middle" font-size="${sel ? 11 : 9}" fill="white">${catEmoji[f.cat]}</text>
+      </g>`;
+    }).join('');
+  }
+
+  function selectFood(id) {
+    selId = id;
+    const f = foods.find(x => x.id === id);
+    renderList(); renderReceiverPins();
+    document.getElementById('dp-name').textContent = f.name;
+    document.getElementById('dp-sub').textContent  = `${f.addr} · Donated by ${f.donor}${f.notes ? ' · ' + f.notes : ''}`;
+    document.getElementById('dp-qty').textContent  = f.qty;
+    document.getElementById('dp-exp').textContent  = f.exp;
+    document.getElementById('dp-cat').textContent  = f.cat.charAt(0).toUpperCase() + f.cat.slice(1);
+    const btn = document.getElementById('claim-btn');
+    btn.disabled    = f.claimed;
+    btn.textContent = f.claimed ? 'Already claimed' : 'Claim this food';
+    document.getElementById('detail-panel').classList.add('show');
+  }
+
+  function closeDetail() {
+    selId = null;
+    document.getElementById('detail-panel').classList.remove('show');
+    renderList(); renderReceiverPins();
+  }
+
+  function claimFood() {
+    const f = foods.find(x => x.id === selId);
+    if (!f || f.claimed) return;
+    f.claimed = true;
+    document.getElementById('claim-btn').disabled    = true;
+    document.getElementById('claim-btn').textContent = 'Already claimed';
+    document.getElementById('dp-sub').textContent    = `${f.addr} · Donated by ${f.donor} · Claimed!`;
+    renderList(); renderReceiverPins();
+    showNotif('Food claimed! Head to ' + f.addr + ' to pick it up.');
+    renderMyDonations();
+  }
+
+  function getDir() {
+    const f = foods.find(x => x.id === selId);
+    if (f) window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(f.addr));
+  }
+
+  function showNotif(msg) {
+    const n = document.getElementById('notif');
+    n.textContent = msg;
+    n.classList.add('show');
+    setTimeout(() => n.classList.remove('show'), 3000);
+  }
+
+  function submitDonation() {
+    const name  = document.getElementById('d-name').value.trim();
+    const cat   = document.getElementById('d-cat').value;
+    const qty   = document.getElementById('d-qty').value.trim();
+    const exp   = document.getElementById('d-exp').value.trim();
+    const addr  = document.getElementById('d-addr').value.trim();
+    const donor = document.getElementById('d-donor').value.trim();
+    const notes = document.getElementById('d-notes').value.trim();
+    if (!name || !addr || !donor) { alert('Please fill in food name, address, and your name.'); return; }
+    const px  = donorPinPlaced ? donorPinPlaced.x       : 100 + Math.random() * 480;
+    const py  = donorPinPlaced ? donorPinPlaced.y       : 80  + Math.random() * 480;
+    const dpx = donorPinPlaced ? donorPinPlaced.x / 2   : 50  + Math.random() * 240;
+    const dpy = donorPinPlaced ? donorPinPlaced.y * 450 / 647 : 55 + Math.random() * 335;
+    foods.push({ id:nextId++, name, cat, qty:qty||'See notes', exp:exp||'Today', addr, donor, notes, x:px, y:py, claimed:false, dx:dpx, dy:dpy });
+    donorPinPlaced = null;
+    document.getElementById('map-hint').textContent = 'Click on map to set pickup location';
+    ['d-name','d-qty','d-exp','d-addr','d-donor','d-notes'].forEach(id => document.getElementById(id).value = '');
+    renderMyDonations(); renderDonorPins(); renderList(); renderReceiverPins();
+    showNotif2('Donation posted! It\'s now visible to receivers.');
+  }
+
+  function showNotif2(msg) {
+    const n = document.createElement('div');
+    n.style.cssText = 'position:absolute;top:16px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:20;white-space:nowrap';
+    n.textContent = msg;
+    document.getElementById('donate-map-area').appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+  }
+
+  function renderDonorPins() {
+    const layer = document.getElementById('donor-pins');
+    layer.innerHTML = foods.map(f => `
+      <g>
+        <circle cx="${f.dx}" cy="${f.dy}" r="8" fill="${catColors[f.cat]}" opacity="0.3"/>
+        <circle cx="${f.dx}" cy="${f.dy}" r="5" fill="${f.claimed ? '#888780' : catColors[f.cat]}"/>
+        <text x="${f.dx}" y="${f.dy+3}" text-anchor="middle" font-size="6" fill="white">${catEmoji[f.cat]}</text>
+      </g>`).join('');
+    if (donorPinPlaced) {
+      const dpx = donorPinPlaced.x / 2;
+      const dpy = donorPinPlaced.y * 450 / 647;
+      layer.innerHTML += `<g>
+        <circle cx="${dpx}" cy="${dpy}" r="10" fill="#378ADD" opacity="0.3"/>
+        <circle cx="${dpx}" cy="${dpy}" r="6"  fill="#378ADD"/>
+        <text x="${dpx}" y="${dpy+4}" text-anchor="middle" font-size="9" fill="white">+</text>
+      </g>`;
+    }
+  }
+
+  function renderMyDonations() {
+    const mine = foods.filter(f => f.donor && f.donor.length > 0).slice(-8).reverse();
+    const el   = document.getElementById('my-donations');
+    el.innerHTML = mine.length ? mine.map(f => `
+      <div class="my-item">
+        <div>
+          <div class="mi-name">${f.name}</div>
+          <div class="mi-detail">${f.qty} · ${f.addr} · Expires ${f.exp}</div>
+        </div>
+        <span class="mi-badge ${f.claimed ? 'mi-claimed' : 'mi-available'}">${f.claimed ? 'Claimed' : 'Available'}</span>
+      </div>`).join('') : '<div style="font-size:13px;color:var(--color-text-secondary)">No donations yet</div>';
+  }
+
+  document.getElementById('donor-map').addEventListener('click', function(e) {
+    const rect  = this.getBoundingClientRect();
+    const svgW  = 340, svgH = 450;
+    const scaleX = svgW / rect.width, scaleY = svgH / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top)  * scaleY;
+    donorPinPlaced = { x: mx * 2, y: my * 647 / 450 };
+    document.getElementById('map-hint').textContent = 'Pickup location set — fill in form and post';
+    renderDonorPins();
+  });
+
+  // Init
+  renderList();
+  renderReceiverPins();
+  renderMyDonations();
+  renderDonorPins();
+</script>
+</body>
+</html>

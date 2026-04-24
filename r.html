@@ -1,0 +1,46 @@
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<script>
+const socket = io("http://localhost:5000");
+
+let foods = [];
+
+async function loadFoods(){
+  const res = await fetch("http://localhost:5000/foods");
+  foods = await res.json();
+  renderList();
+}
+
+function renderList(){
+  const list = document.getElementById("food-list");
+
+  list.innerHTML = foods.map(f=>`
+    <div>
+      <h3>${f.name}</h3>
+      <p>${f.addr}</p>
+      <button onclick="claimFood('${f._id}')" ${f.claimed?"disabled":""}>
+        ${f.claimed?"Claimed":"Claim"}
+      </button>
+    </div>
+  `).join("");
+}
+
+async function claimFood(id){
+  await fetch(`http://localhost:5000/foods/${id}`,{
+    method:"PUT"
+  });
+}
+
+// 🔥 REAL-TIME EVENTS
+socket.on("newFood", (food)=>{
+  foods.push(food);
+  renderList();
+});
+
+socket.on("foodClaimed", (updated)=>{
+  foods = foods.map(f=>f._id === updated._id ? updated : f);
+  renderList();
+});
+
+loadFoods();
+</script>
